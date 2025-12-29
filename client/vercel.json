@@ -1,6 +1,10 @@
 {
   "routes": [
     {
+      "src": "^/(assets|vite.svg|favicon.ico|robots.txt)/(.*)",
+      "dest": "/$1/$2"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
