@@ -1,0 +1,28 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "author": "ashwani",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@clerk/express": "^1.7.60",
+    "config": "^4.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "http-status": "^2.1.0",
+    "inngest": "^3.48.1",
+    "logger": "^0.0.1",
+    "mongoose": "^8.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
