@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../ui/button';
+import { Button } from '../ui/button.jsx';
 
 const BookingCard = ({ booking }) => {
   const { show, bookedSeats, amount, isPaid, _id } = booking;
