@@ -1,8 +1,8 @@
 import express from "express";
 import cors from 'cors'
 import { clerkMiddleware } from '@clerk/express'
-import { serve } from "inngest/express";
-import { inngest, functions } from "./inngest/index.js"
+// import { serve } from "inngest/express";
+// import { inngest, functions } from "./inngest/index.js"
 
 const app=express();
 
@@ -37,7 +37,7 @@ app.get('/', (req,res)=>{
 
 
 // Set up the "/api/inngest" (recommended) routes with the serve handler
-app.use("/api/inngest", serve({ client: inngest, functions }));
+// app.use("/api/inngest", serve({ client: inngest, functions }));
 
 
 
