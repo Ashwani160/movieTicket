@@ -47,7 +47,7 @@ const AppProvider = ({ children }) => {
   // ✅ FETCH SHOWS
   const fetchShows = async () => {
     try {
-      const res = await axios.get("/shows/all");
+      const res = await axios.get("/show/all");
       if (res.data.success) {
         setShows(res.data.data);
       }

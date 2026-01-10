@@ -1,9 +1,13 @@
 import { dummyDashboardData } from '@/assets/assets.js';
+import { useAppContext } from '@/context/AppContext.jsx';
 import timeFormat from '@/lib/timeFormat';
 import { ChartLineIcon, CircleDollarSignIcon, PlayCircleIcon, UsersIcon } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 
 const DashBoard = () => {
+
+
+
   const [dashboardData, setDashboardData] = useState({
     totalBookings: 0,
     totalRevenue: 0,

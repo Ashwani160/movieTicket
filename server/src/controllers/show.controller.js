@@ -32,6 +32,7 @@ const getNowPlayingMovies=catchAsync(async(req , res)=>{
     
 })
 
+//API to add movie along with shows to the database
 const addMovieWithShow= catchAsync(async(req,res)=>{
     
     const {movieId, showsInput, showPrice}=req.body;
@@ -134,6 +135,7 @@ const getShows= catchAsync(async(req, res)=>{
 
 })
 
+//get shows for a specific movie
 const getShow = catchAsync(async (req, res) => {
    const { movieId } = req.params;
 

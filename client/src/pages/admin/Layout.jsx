@@ -3,7 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAppContext } from "@/context/AppContext";
 
 import AdminNavbar from "@/components/custom/admin/AdminNavbar.jsx";
-import AdminSidebar from "@/components/custom/admin/AdminSidebar";
+import AdminSidebar from "@/components/custom/admin/AdminSidebar.jsx";
 
 const Layout = () => {
   const { isAdmin, adminLoading } = useAppContext();
