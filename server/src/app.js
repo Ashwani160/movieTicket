@@ -22,14 +22,16 @@ app.use(clerkMiddleware())
 
 // routes
 import test from "./routes/test.route.js";
-import casts from "./routes/casts.route.js"
-import shows from "./routes/shows.routes.js"
-import trailers from "./routes/trailers.routes.js"
-app.use('/v1/test', test );
-app.use('/v1/casts', casts);    
-app.use('/v1/shows', shows);
-app.use('/v1/trailers', trailers);
+import show from "./routes/show.route.js";
+import booking from "./routes/booking.route.js"
+import admin from "./routes/admin.route.js"
+import user from "./routes/user.route.js";
 
+app.use('/v1/test', test );
+app.use('/v1/show', show);
+app.use('/v1/booking', booking);
+app.use('/v1/admin', admin);
+app.use('/v1/user', user);
 
 app.get('/', (req,res)=>{
     res.send('Hello World');

@@ -4,7 +4,7 @@ import {Kitten} from "../models/kitty.models.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const test= catchAsync(async(req, res)=>{
-    // throw new ApiError(400, "something went worng!!")
+    throw new ApiError(400, "something went worng!!")
     res.send('test');
 })
 const test2=catchAsync(async(req, res)=>{

@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router";
 import App from "./App.jsx";
 import './index.css'
 import { ClerkProvider } from '@clerk/clerk-react'
+import {AppProvider} from "./context/AppContext.jsx"
 
 const root = document.getElementById("root");
 
@@ -17,7 +18,9 @@ if (!PUBLISHABLE_KEY) {
 ReactDOM.createRoot(root).render(
   <BrowserRouter>
        <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-        <App />
+        <AppProvider>
+          <App />
+        </AppProvider>
       </ClerkProvider>
   </BrowserRouter>,
 );
