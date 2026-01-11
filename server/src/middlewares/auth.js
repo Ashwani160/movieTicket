@@ -8,12 +8,12 @@ const protectAdmin = async (req, res, next) => {
         const user = await clerkClient.users.getUser(userId)
 
         if(user.privateMetadata.role !== 'admin'){
-            throw new ApiError(403, "not authorized");
+            throw new ApiError(403, "not authorized laalaa");
         }
 
         next();
     } catch (error) {
-        throw new ApiError(403, "not authorized");
+        throw new ApiError(403, "not authorized laa");
     }
 };
 

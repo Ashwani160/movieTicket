@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useContext } from 'react'
 
 const ListBookings = () => {
+  const {shows}= useContext();
+  
   return (
     <div>ListBookings</div>
   )

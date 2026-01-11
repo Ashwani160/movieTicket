@@ -1,70 +1,41 @@
-import React, { useEffect, useState } from 'react'
-import { Button } from '../ui/button'
-import ThreeDCardDemo from '../aceternity/3dCard'
-import { dummyShowsData } from '@/assets/assets'
-import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import React from 'react';
+import { Button } from '../ui/button';
+import ThreeDCardDemo from '../aceternity/3dCard';
+import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '@/context/AppContext.jsx';
 
 const FeaturedSection = () => {
+  const { shows } = useAppContext();
+  const navigate = useNavigate();
 
-  const url=import.meta.env.VITE_API_URL;
-  const [shows, setShows] = useState([])
-  const [loading, setLoading]=useState(true)
-
-  const navigate=useNavigate();
-
-    useEffect(() => {
-    if (!url) return
-    const fetchShows = async () => {
-      try {
-        const res = await axios.get(`${url}/shows/allShows`)
-        // console.log(res);
-        const fetchedShows=res.data?.data ||[]
-        setShows(fetchedShows)
-        // console.log(shows[0].runtime)
-      } catch (err) {
-        console.log('fetch shows error:', err?.message || err)
-      } finally{
-        setLoading(false);
-      }
-    }
-
-    fetchShows()
-  }, [url])
-  
   return (
-    <div className="mt-6">
-        <div className="flex justify-between items-center mb-6">
-            <p className="text-lg font-semibold">Now Showing</p>
-            <Button 
-              onClick={()=> navigate('/movies')}
-            >Show all</Button>
-        </div>
-        <div className="flex flex-wrap justify-evenly">
-          {
-            loading ?(
-              <p>Loading</p>
-            ) 
-            :(
-              shows.slice(0,4).map((movie, index)=>{
-                return (
-                  <ThreeDCardDemo key={index} movie={movie} />
-                )
-              })
-            )
-          }
-          {/* {dummyShowsData.slice(0,4).map((movie, index)=>{
-            return (
-              <ThreeDCardDemo key={index} movie={movie} />
-            )
-          })} */}
-        </div>
+    <section className="mt-10 px-4">
+      {/* ===== Header ===== */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-white">
+          Now Showing
+        </h2>
+        <Button
+          onClick={() => navigate('/movies')}
+          className="bg-primary-500 text-black hover:bg-primary-dull"
+        >
+          Show all
+        </Button>
+      </div>
 
-        <div>
+      {/* ===== Cards ===== */}
+      <div className="flex flex-wrap justify-center gap-8">
+        {shows.length === 0 ? (
+          <p className="text-gray-400">No shows available</p>
+        ) : (
+          shows.slice(0, 4).map((movie) => (
+            <ThreeDCardDemo key={movie._id} movie={movie} />
+          ))
+        )}
+      </div>
+    </section>
+  );
+};
 
-        </div>
-    </div>
-  )
-}
-
-export default FeaturedSection
+export default FeaturedSection;
+  

@@ -32,7 +32,7 @@ const getDashboardData= catchAsync(async(req, res)=>{
 })
 
 const getAllShows= catchAsync(async(req, res)=>{
-    const allShows= await Show.find({$gte: new Date()}).populate('movie');
+    const allShows= await Show.find({showDateTime:{$gte: new Date()}}).populate('movie');
     return res.status(200)
         .json(new ApiResponse(200, {allShows}));
 })

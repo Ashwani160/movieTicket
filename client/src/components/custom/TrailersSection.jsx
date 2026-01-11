@@ -1,114 +1,125 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { dummyTrailers } from '@/assets/assets.js';
-import ReactPlayer from 'react-player';
-import axios from 'axios';
-import { DraggableCardDemo } from '../aceternity/DraggableCard';
+import React, { useEffect, useState } from "react";
+import ReactPlayer from "react-player";
+import axios from "axios";
+import { useAppContext } from "@/context/AppContext";
+import { DraggableCardDemo } from "../aceternity/DraggableCard";
+
+const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+const TMDB_BASE = "https://api.themoviedb.org/3";
+const IMAGE_BASE = "https://image.tmdb.org/t/p/original";
 
 const TrailersSection = () => {
-  const url = import.meta.env.VITE_API_URL;
+  const { shows } = useAppContext();
 
-  const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [movies, setMovies] = useState([]);
   const [currentTrailer, setCurrentTrailer] = useState(null);
+  const [currentBackdrop, setCurrentBackdrop] = useState(null);
 
-  async function getTrailers() {
-    try {
-      if (!url) {
-        console.warn('VITE_API_URL is not set');
-        setVideos(dummyTrailers);
-        setCurrentTrailer(dummyTrailers[0] || null);
-        return;
+  // ✅ Convert shows → draggable cards
+  useEffect(() => {
+    if (!shows?.length) return;
+
+    const mapped = shows.map((movie) => ({
+      _id: movie._id,
+      title: movie.title,
+      tmdbId: movie._id,
+      image: `${IMAGE_BASE}${movie.backdrop_path || movie.poster_path}`,
+    }));
+
+    setMovies(mapped);
+    setCurrentBackdrop(mapped[0]?.image);
+  }, [shows]);
+
+  // ✅ Fetch trailer from TMDB
+  const fetchTrailer = async (movie) => {
+  try {
+    setCurrentBackdrop(movie.image);
+    // console.log(`${TMDB_BASE}/movie/${movie.tmdbId}/videos`)
+    // const API_KEY=import.meta.env.TMDB_API_KEY;
+    // console.log(TMDB_API_KEY)
+    const res = await axios.get(
+      `${TMDB_BASE}/movie/${movie.tmdbId}/videos`,
+      {
+        headers: {
+          Authorization: `Bearer ${TMDB_API_KEY}`,
+          accept: "application/json",
+        },
       }
+    );
 
-      const res = await axios.get(`${url.replace(/\/$/, '')}/trailers/allTrailers`);
-      const raw = res.data?.data || [];
+    const results = res.data?.results || [];
 
-      // normalize incoming shape to { _id, image, videoUrl }
-      const normalized = raw.map((v, i) => ({
-        _id: v._id || v.id || i,
-        image: v.image || v.thumbnail || v.poster || v.img || null,
-        videoUrl: v.videoUrl || v.video_url || v.url || v.video || v.source || null,
-        raw: v,
-      }));
+    const trailer =
+      results.find(
+        (v) => v.site === "YouTube" && v.type === "Trailer" && v.official
+      ) ||
+      results.find((v) => v.site === "YouTube" && v.type === "Trailer") ||
+      results.find((v) => v.site === "YouTube" && v.type === "Teaser");
 
-      console.log('fetched trailers (normalized):', normalized);
-
-      // prefer items that actually have videoUrl
-      const withUrl = normalized.filter((x) => !!x.videoUrl);
-      const finalList = withUrl.length ? withUrl : normalized;
-
-      if (finalList.length === 0) {
-        setVideos(dummyTrailers);
-        setCurrentTrailer(dummyTrailers[0] || null);
-      } else {
-        setVideos(finalList);
-        setCurrentTrailer(finalList[0]);
-      }
-    } catch (err) {
-      console.error('Error fetching trailers:', err?.message || err);
-      setVideos(dummyTrailers);
-      setCurrentTrailer(dummyTrailers[0] || null);
-    } finally {
-      setLoading(false);
+    if (!trailer) {
+      setCurrentTrailer(null);
+      return;
     }
+    console.log(`https://www.youtube.com/watch?v=${trailer.key}`)
+    setCurrentTrailer({
+      title: movie.title,
+      url: `https://www.youtube.com/watch?v=${trailer.key}`,
+    });
+  } catch (err) {
+    console.error("Trailer fetch failed:", err.response?.data || err.message);
   }
+};
 
-  useEffect(() => {
-    getTrailers();
-  }, [url]);
-
-  // debug: show which URL will be played
-  useEffect(() => {
-    if (currentTrailer) {
-      console.log('ReactPlayer will play:', currentTrailer.videoUrl || currentTrailer.url);
-    }
-  }, [currentTrailer]);
 
   return (
-    <div className="my-6">
-      {loading ? (
-        <p>loading...</p>
-      ) : (
-        <>
-          {/* --- STYLED VIDEO PLAYER SECTION --- */}
-          <div className="w-full max-w-4xl mx-auto mb-12">
-            {/* This wrapper creates the responsive 16:9 aspect ratio box.
-              It's styled with a dark background, rounded corners, a shadow,
-              and overflow-hidden to clip the player to its shape.
-            */}
-            <div className="relative aspect-video w-full rounded-xl overflow-hidden shadow-2xl bg-neutral-900">
-              {currentTrailer ? (
-                <ReactPlayer
-                  src={currentTrailer.videoUrl || currentTrailer.url}
-                  controls
-                  width="100%"
-                  height="100%"
-                  // This style makes the player fill the relative parent
-                  style={{ position: 'absolute', top: 0, left: 0 }}
-                />
-              ) : (
-                // --- STYLED EMPTY STATE ---
-                // This now sits inside the player box
-                <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-                  <p className="text-neutral-500 text-lg font-medium">
-                    Select a trailer to play
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-          {/* --- END VIDEO PLAYER SECTION --- */}
+    <section className="my-24">
+      <h2 className="text-2xl font-bold mb-8 px-4">
+        Latest Trailers
+      </h2>
 
-          <div className="mt-6">
-            <DraggableCardDemo
-              videos={videos}
-              onSelect={(video) => setCurrentTrailer(video)}
-              currentTrailerId={currentTrailer?._id}
+      {/* ===== PLAYER ===== */}
+      <div className="relative w-full max-w-6xl mx-auto mb-16">
+        <div className="relative aspect-video rounded-2xl overflow-hidden">
+
+          {/* 🎬 BACKDROP */}
+          {currentBackdrop && (
+            <img
+              src={currentBackdrop}
+              alt="Trailer backdrop"
+              className="absolute inset-0 w-full h-full object-cover scale-105"
             />
+          )}
+
+          {/* 🌑 GRADIENT */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
+
+          {/* ▶ PLAYER */}
+          <div className="absolute inset-0 z-10">
+            {currentTrailer ? (
+              <ReactPlayer
+                src={currentTrailer.url}
+                controls
+                width="100%"
+                height="100%"
+              />
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center gap-4 text-gray-300">
+                <div className="h-20 w-20 flex items-center justify-center rounded-full bg-primary-500 text-black text-3xl font-bold">
+                  ▶
+                </div>
+                <p>Select a movie to play trailer</p>
+              </div>
+            )}
           </div>
-        </>
-      )}
-    </div>
+        </div>
+      </div>
+
+      {/* ===== DRAGGABLE MOVIES ===== */}
+      <DraggableCardDemo
+        videos={movies}
+        onSelect={fetchTrailer}
+      />
+    </section>
   );
 };
 
