@@ -1,59 +1,74 @@
-import React, { useEffect, useState } from 'react';
-import BookingCard from '../components/custom/BookingCard';
-import { dummyBookingData } from '@/assets/assets.js'; // Importing data from assets
+import React, { useEffect, useState } from "react";
+import { useAppContext } from "@/context/AppContext.jsx";
+import BookingCard from "../components/custom/BookingCard";
 
 const MyBookings = () => {
+  const { getToken, axios } = useAppContext();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const getMyBookings = async () => {
     try {
-      // Simulating API delay to mimic a real fetch
-      setTimeout(() => {
-        setBookings(dummyBookingData);
-        setLoading(false);
-      }, 500);
+      setLoading(true);
+      const token = await getToken();
+      const res = await axios.get("/user/bookings", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setBookings(res.data.data);
     } catch (err) {
-      console.log(err);
+      console.error(err);
+    } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     getMyBookings();
-  }, [])
+  }, []);
 
   return (
-    // Removed bg-gray-900, keeping text-white assuming global dark theme
-    <div className="min-h-screen text-white py-10 px-4 md:px-8">
-      {/* Reduced max-width to 4xl for a focused single-column list */}
-      <div className="container mx-auto max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8 border-b border-gray-800 pb-4">
-          My Bookings
+    <div className="min-h-screen bg-neutral-950 text-white px-4 py-12">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-4xl font-extrabold mb-10 tracking-tight">
+          🎟 My Bookings
         </h1>
 
-        {loading ? (
-          // Updated skeleton: Removed bg-gray-800, used border for visibility
+        {/* LOADING */}
+        {loading && (
           <div className="space-y-6">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="h-48 rounded-xl border border-gray-800 animate-pulse w-full"></div>
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-48 rounded-2xl bg-neutral-900/60 animate-pulse"
+              />
             ))}
           </div>
-        ) : bookings.length > 0 ? (
-          // Changed from Grid to Flex/Space-y for single row layout
-          <div className="space-y-6">
+        )}
+
+        {/* BOOKINGS */}
+        {!loading && bookings.length > 0 && (
+          <div className="space-y-8">
             {bookings.map((booking) => (
               <BookingCard key={booking._id} booking={booking} />
             ))}
           </div>
-        ) : (
-          <div className="text-center py-20 text-gray-500">
-            <p className="text-xl">No bookings found.</p>
+        )}
+
+        {/* EMPTY STATE */}
+        {!loading && bookings.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-32 text-neutral-400">
+            <div className="text-6xl mb-4">🎬</div>
+            <p className="text-xl font-semibold">
+              You haven’t booked any movies yet
+            </p>
+            <p className="text-sm mt-2">
+              Start exploring and book your first show!
+            </p>
           </div>
         )}
       </div>
     </div>
   );
-}
+};
 
 export default MyBookings;

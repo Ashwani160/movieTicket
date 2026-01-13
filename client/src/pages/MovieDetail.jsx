@@ -1,79 +1,60 @@
-import axios from 'axios'
-import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom' // Import useNavigate
-import timeFormat from '../lib/timeFormat.js'
-import DateSelect from '../components/custom/DateSelect.jsx' // Import the new component
-import ThreeDCardDemo from '@/components/aceternity/3dCard'
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import timeFormat from "../lib/timeFormat.js";
+import DateSelect from "../components/custom/DateSelect.jsx";
+import ThreeDCardDemo from "@/components/aceternity/3dCard";
+import { useAppContext } from "@/context/AppContext.jsx";
 
 const MovieDetail = () => {
+  const { axios } = useAppContext();
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-  const url = import.meta.env.VITE_API_URL
-  const [movie, setMovie] = useState(null)
-  const [movies, setMovies] = useState([])
-  const [loading, setLoading] = useState(true)
-  
-  // State for the selected date, defaults to today
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [loading, setLoading] = useState(true);
+  const [movie, setMovie] = useState(null);
+  const [movies, setMovies] = useState([]);
+  const [showTimes, setShowTimes] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null); // ✅ start null
 
-  const { id } = useParams()
-  const navigate = useNavigate() // Initialize useNavigate hook
-
+  // 🔹 Fetch movie + show dates
   const getMovie = async () => {
     try {
-      const res = await axios.get(`${url}/shows/getShow/${id}`)
-      setMovie(res.data?.data[0])
-      setLoading(false)
+      const res = await axios.get(`/show/get-show/${id}`);
+      setMovie(res.data.data.movie);
+      setShowTimes(res.data.data.showTimes);
     } catch (err) {
-      console.log(err)
-      setLoading(false)
+      console.error(err);
     }
-  }
+  };
 
+  // 🔹 Fetch recommended movies
   const getMovies = async () => {
     try {
-      const res = await axios.get(`${url}/shows/allShows`)
-      let allMovies = res.data?.data;
-      
-      // Filter out the current movie from the recommendations
-      if (movie && movie.id) {
-        allMovies = allMovies.filter((m) => {
-          return m.id != movie.id;
-        })
-      }
-      
-      // Limit to 4 recommendations
-      allMovies = allMovies.slice(0, 4);
-
-      setMovies(allMovies)
+      const res = await axios.get(`/show/all`);
+      setMovies(res.data?.data || []);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
-  }
+  };
 
-  // Initial Load: Get the main movie details
   useEffect(() => {
     setLoading(true);
-    setMovie(null);
-    setMovies([]); // Clear previous recommendations
-    if (id) {
-      getMovie()
-    }
-  }, [id])
+    setSelectedDate(null); // ✅ reset on movie change
+    getMovie().finally(() => setLoading(false));
+  }, [id]);
 
-  // Secondary Load: Get recommendations once the main movie is loaded
   useEffect(() => {
-    if (movie) {
-      getMovies()
-    }
-  }, [movie])
+    if (movie) getMovies();
+  }, [movie]);
 
-  // Handler for the "See Showtimes" button
+  // ✅ Only dates that actually have shows
+  const availableDates = showTimes.map((s) => s.date);
+
+  // Proceed to booking
   const handleProceedToBooking = () => {
-    // Use local date string (YYYY-MM-DD) to avoid UTC timezone shifts
-    // 'en-CA' locale consistently formats as YYYY-MM-DD
-    const dateString = selectedDate.toLocaleDateString('en-CA');
-    
-    // Navigate to the seat layout page with both movie ID and date
+    if (!selectedDate) return;
+
+    const dateString = selectedDate.toLocaleDateString("en-CA");
     navigate(`/movies/${id}/${dateString}`);
   };
 
@@ -82,7 +63,7 @@ const MovieDetail = () => {
       <div className="flex justify-center items-center min-h-[80vh] bg-gray-900">
         <p className="text-2xl animate-pulse text-white">Loading...</p>
       </div>
-    )
+    );
   }
 
   if (!movie) {
@@ -90,38 +71,36 @@ const MovieDetail = () => {
       <div className="flex justify-center items-center min-h-[80vh] bg-gray-900">
         <p className="text-2xl text-red-500">Movie not found.</p>
       </div>
-    )
+    );
   }
 
   return (
     <>
-      {/* --- UPPER SECTION: Movie Details --- */}
+      {/* ===== MOVIE DETAILS ===== */}
       <div className="min-h-screen bg-gray-900 text-white">
-        {/* Backdrop Image */}
+        {/* Backdrop */}
         <div className="relative w-full h-[40vh] md:h-[60vh]">
           <img
-            src={movie.backdrop_path}
-            alt={movie.title || 'Movie backdrop'}
+            src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
+            alt={movie.title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent" />
         </div>
 
-        {/* Content Section */}
+        {/* Content */}
         <div className="container mx-auto max-w-4xl p-4 md:p-8 -mt-20 md:-mt-32 relative z-10">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-            {movie.title || 'Movie Detail'}
+          <h1 className="text-4xl md:text-6xl font-bold mb-4">
+            {movie.title}
           </h1>
 
-          {/* Details Card */}
-          <div className="bg-gray-800 bg-opacity-80 backdrop-blur-sm rounded-lg shadow-2xl p-6">
-            
+          <div className="bg-gray-800/80 backdrop-blur rounded-lg p-6 shadow-2xl">
             {/* Genres */}
             <div className="flex flex-wrap gap-2 mb-4">
               {movie.genres.map((genre) => (
                 <span
-                  key={genre.id || genre.name}
-                  className="bg-pink-600 text-white px-3 py-1 rounded-full text-sm font-semibold"
+                  key={genre.id}
+                  className="bg-pink-600 px-3 py-1 rounded-full text-sm font-semibold"
                 >
                   {genre.name}
                 </span>
@@ -129,72 +108,67 @@ const MovieDetail = () => {
             </div>
 
             {/* Overview */}
-            <h2 className="text-2xl font-semibold mb-2">Overview</h2>
-            <p className="text-gray-300 mb-6 text-base leading-relaxed">
+            <p className="text-gray-300 mb-6 leading-relaxed">
               {movie.overview}
             </p>
 
-            {/* Stats: Rating and Runtime */}
-            <div className="flex flex-wrap gap-6 md:gap-10 items-center">
-              <div className="flex items-center gap-2">
-                <span className="text-yellow-400 text-3xl font-bold">
-                  {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
-                </span>
-                <span className="text-gray-400 mt-1">/ 10</span>
+            {/* Stats */}
+            <div className="flex gap-8 mb-6">
+              <div>
+                <p className="text-yellow-400 text-3xl font-bold">
+                  {movie.vote_average.toFixed(1)}
+                </p>
+                <p className="text-gray-400">Rating</p>
               </div>
-              
-              <div className="flex items-center gap-2">
-                <span className="text-3xl font-bold">
+
+              <div>
+                <p className="text-3xl font-bold">
                   {timeFormat(movie.runtime)}
-                </span>
-                <span className="text-gray-400 mt-1">Runtime</span>
+                </p>
+                <p className="text-gray-400">Runtime</p>
               </div>
             </div>
 
-            {/* --- DATE SELECT COMPONENT --- */}
-            <DateSelect 
-              selectedDate={selectedDate} 
-              onDateSelect={setSelectedDate} 
+            {/* ✅ DATE SELECT */}
+            <DateSelect
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
+              availableDates={availableDates}
             />
 
-            {/* --- BOOKING BUTTON --- */}
+            {/* ✅ BUTTON ENABLES ONLY WHEN DATE SELECTED */}
             <button
+              disabled={!selectedDate}
               onClick={handleProceedToBooking}
-              className="w-full bg-pink-600 text-white font-bold py-3 px-6 rounded-lg text-lg 
-                         hover:bg-pink-700 transition-colors duration-200
-                         focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50"
+              className={`w-full mt-4 py-3 rounded-lg text-lg font-bold transition
+                ${
+                  selectedDate
+                    ? "bg-pink-600 hover:bg-pink-700 cursor-pointer"
+                    : "bg-gray-600 cursor-not-allowed opacity-60"
+                }`}
             >
               See Showtimes
             </button>
-
           </div>
         </div>
       </div>
 
-      {/* --- LOWER SECTION: Recommended Movies --- */}
-      {/* Added bg-gray-900 to match the upper section's theme */}
-      <div className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto max-w-7xl px-4">
-          <h2 className="text-3xl font-bold mb-8 text-center">
-            Recommended Movies
-          </h2>
+      {/* ===== RECOMMENDED ===== */}
+      <div className="bg-gray-900 text-white py-20">
+        <h2 className="text-3xl font-bold text-center mb-14">
+          Recommended Movies
+        </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {movies && movies.length > 0 &&
-              movies.map((recMovie) => (
-                <div
-                  key={recMovie.id}
-                  className="transition-transform duration-300 hover:scale-105 hover:-translate-y-2"
-                >
-                  <ThreeDCardDemo movie={recMovie} />
-                </div>
-              ))
-            }
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 gap-y-24 px-6 max-w-7xl mx-auto">
+          {movies.map((recMovie) => (
+            <div key={recMovie._id} className="flex justify-center">
+              <ThreeDCardDemo movie={recMovie} />
+            </div>
+          ))}
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default MovieDetail
+export default MovieDetail;

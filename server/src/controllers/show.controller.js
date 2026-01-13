@@ -5,7 +5,7 @@ import axios from "axios";
 import Movie from "../models/movie.model.js";
 import Show from "../models/show.model.js";
 
-//api to get now playing movies from TBDM API
+//api to get now playing movies from TMDB API
 const getNowPlayingMovies=catchAsync(async(req , res)=>{
     const url = "https://api.themoviedb.org/3/movie/now_playing";
 
@@ -112,7 +112,7 @@ const addMovieWithShow= catchAsync(async(req,res)=>{
         }
 })
 
-// API to get all shows
+// API to get all the movies which have upcoming shows
 const getShows= catchAsync(async(req, res)=>{
 
     const movieIds = await Show.distinct("movie", {

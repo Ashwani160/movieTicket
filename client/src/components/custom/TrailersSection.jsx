@@ -15,7 +15,7 @@ const TrailersSection = () => {
   const [currentTrailer, setCurrentTrailer] = useState(null);
   const [currentBackdrop, setCurrentBackdrop] = useState(null);
 
-  // ✅ Convert shows → draggable cards
+  // Convert shows → draggable cards
   useEffect(() => {
     if (!shows?.length) return;
 
@@ -30,46 +30,43 @@ const TrailersSection = () => {
     setCurrentBackdrop(mapped[0]?.image);
   }, [shows]);
 
-  // ✅ Fetch trailer from TMDB
+  // Fetch trailer
   const fetchTrailer = async (movie) => {
-  try {
-    setCurrentBackdrop(movie.image);
-    // console.log(`${TMDB_BASE}/movie/${movie.tmdbId}/videos`)
-    // const API_KEY=import.meta.env.TMDB_API_KEY;
-    // console.log(TMDB_API_KEY)
-    const res = await axios.get(
-      `${TMDB_BASE}/movie/${movie.tmdbId}/videos`,
-      {
-        headers: {
-          Authorization: `Bearer ${TMDB_API_KEY}`,
-          accept: "application/json",
-        },
+    try {
+      setCurrentBackdrop(movie.image);
+
+      const res = await axios.get(
+        `${TMDB_BASE}/movie/${movie.tmdbId}/videos`,
+        {
+          headers: {
+            Authorization: `Bearer ${TMDB_API_KEY}`,
+            accept: "application/json",
+          },
+        }
+      );
+
+      const results = res.data?.results || [];
+
+      const trailer =
+        results.find(
+          (v) => v.site === "YouTube" && v.type === "Trailer" && v.official
+        ) ||
+        results.find((v) => v.site === "YouTube" && v.type === "Trailer") ||
+        results.find((v) => v.site === "YouTube" && v.type === "Teaser");
+
+      if (!trailer) {
+        setCurrentTrailer(null);
+        return;
       }
-    );
 
-    const results = res.data?.results || [];
-
-    const trailer =
-      results.find(
-        (v) => v.site === "YouTube" && v.type === "Trailer" && v.official
-      ) ||
-      results.find((v) => v.site === "YouTube" && v.type === "Trailer") ||
-      results.find((v) => v.site === "YouTube" && v.type === "Teaser");
-
-    if (!trailer) {
-      setCurrentTrailer(null);
-      return;
+      setCurrentTrailer({
+        title: movie.title,
+        url: `https://www.youtube.com/watch?v=${trailer.key}`,
+      });
+    } catch (err) {
+      console.error("Trailer fetch failed:", err.response?.data || err.message);
     }
-    console.log(`https://www.youtube.com/watch?v=${trailer.key}`)
-    setCurrentTrailer({
-      title: movie.title,
-      url: `https://www.youtube.com/watch?v=${trailer.key}`,
-    });
-  } catch (err) {
-    console.error("Trailer fetch failed:", err.response?.data || err.message);
-  }
-};
-
+  };
 
   return (
     <section className="my-24">
@@ -81,7 +78,7 @@ const TrailersSection = () => {
       <div className="relative w-full max-w-6xl mx-auto mb-16">
         <div className="relative aspect-video rounded-2xl overflow-hidden">
 
-          {/* 🎬 BACKDROP */}
+          {/* Backdrop */}
           {currentBackdrop && (
             <img
               src={currentBackdrop}
@@ -90,10 +87,10 @@ const TrailersSection = () => {
             />
           )}
 
-          {/* 🌑 GRADIENT */}
+          {/* Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
 
-          {/* ▶ PLAYER */}
+          {/* Player */}
           <div className="absolute inset-0 z-10">
             {currentTrailer ? (
               <ReactPlayer
@@ -103,11 +100,8 @@ const TrailersSection = () => {
                 height="100%"
               />
             ) : (
-              <div className="h-full flex flex-col items-center justify-center gap-4 text-gray-300">
-                <div className="h-20 w-20 flex items-center justify-center rounded-full bg-primary-500 text-black text-3xl font-bold">
-                  ▶
-                </div>
-                <p>Select a movie to play trailer</p>
+              <div className="h-full flex items-center justify-center text-gray-400 text-lg">
+                Select a movie to play its trailer
               </div>
             )}
           </div>
