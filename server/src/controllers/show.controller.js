@@ -239,9 +239,20 @@ const getShow = catchAsync(async (req, res) => {
   );
 });
 
+const getUpcomingShows= catchAsync(async(req, res)=>{
+  const shows = await axios.get('https://api.themoviedb.org/3/movie/now_playing',{
+    headers:{
+      Authorization: `Bearer ${process.env.TMDB_API_KEY}`
+    }
+  });
+  
+  res.status(200).json(new ApiResponse(200, shows.data));
+})
+
 export {
     getNowPlayingMovies,
     addMovieWithShow,
     getShows,
-    getShow
+    getShow,
+    getUpcomingShows
 };
