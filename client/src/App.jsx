@@ -15,6 +15,8 @@ import ListShows from "./pages/admin/ListShows.jsx";
 import ListBookings from "./pages/admin/ListBookings.jsx";
 import Layout from "./pages/admin/Layout.jsx";
 import AddShows from "./pages/admin/AddShows.jsx";
+import UpcomingShows from "./pages/UpcomingShows.jsx";
+import Theater from "./pages/Theater.jsx"
 
 function App() {
 
@@ -32,6 +34,8 @@ function App() {
           <Route path='/movies/:id/:date' element={<SeatLayout/>}/>
           <Route path='/my-bookings' element={<MyBookings/>}/>
           <Route path='/favorite' element={<Favorite/>}/>
+          <Route path='/upcoming' element={<UpcomingShows/>}/>
+          <Route path='/theater' element={<Theater/>}/>
           <Route path="/admin/*" element={<Layout />}>
             <Route index element={<DashBoard />} />
             <Route path="add-shows" element={<AddShows />} />

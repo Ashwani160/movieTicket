@@ -30,8 +30,8 @@ export function NavbarDemo2() {
       link: "/theater",
     },
     {
-      name: "Releases",
-      link: "/",
+      name: "Upcoming",
+      link: "/upcoming",
     },
     {
       name: "Favorites",
