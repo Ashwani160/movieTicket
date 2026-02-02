@@ -16,7 +16,8 @@ import ListBookings from "./pages/admin/ListBookings.jsx";
 import Layout from "./pages/admin/Layout.jsx";
 import AddShows from "./pages/admin/AddShows.jsx";
 import UpcomingShows from "./pages/UpcomingShows.jsx";
-import Theater from "./pages/Theater.jsx"
+import Theater from "./pages/Theater.jsx";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
 
@@ -45,6 +46,7 @@ function App() {
         </Routes>
       </div>
       {!isAdminRoute && <Footer/> }
+      <Analytics />
     </>
   );
 }
